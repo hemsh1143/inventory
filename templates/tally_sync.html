@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Tally Integration</h1>
+    <a href="{{ url_for('bulk_sync_to_tally') }}" class="btn btn-primary" onclick="return confirm('Sync all unsynced records to Tally?')">
+        <i class="fas fa-sync"></i> Bulk Sync
+    </a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ stats.items.synced }}/{{ stats.items.total }}</h5>
+                <p class="card-text">Items Synced</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ stats.suppliers.synced }}/{{ stats.suppliers.total }}</h5>
+                <p class="card-text">Suppliers Synced</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ stats.customers.synced }}/{{ stats.customers.total }}</h5>
+                <p class="card-text">Customers Synced</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ stats.purchases.synced }}/{{ stats.purchases.total }}</h5>
+                <p class="card-text">Purchases Synced</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ stats.sales.synced }}/{{ stats.sales.total }}</h5>
+                <p class="card-text">Sales Synced</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h6 class="card-title mb-0">Sync Logs</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Record Type</th>
+                        <th>Record ID</th>
+                        <th>Status</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td>{{ log.created_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ log.sync_type }}</td>
+                        <td>{{ log.record_type }}</td>
+                        <td>{{ log.record_id }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if log.status == 'success' else 'danger' }}">
+                                {{ log.status }}
+                            </span>
+                        </td>
+                        <td>{{ log.message }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

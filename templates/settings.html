@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings - Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-cog"></i> System Settings</h1>
+    <p>Configure your inventory management system</p>
+</div>
+
+<div class="content-section">
+    <div class="section-header">
+        <h2>General Settings</h2>
+    </div>
+    
+    <form method="POST" class="form-grid">
+        <div class="form-group">
+            <label for="company_name">Company Name *</label>
+            <input type="text" id="company_name" name="company_name" value="{{ settings.company_name }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="currency_symbol">Currency Symbol</label>
+            <select id="currency_symbol" name="currency_symbol">
+                <option value="₹" {% if settings.currency_symbol == '₹' %}selected{% endif %}>Indian Rupee (₹)</option>
+                <option value="$" {% if settings.currency_symbol == '$' %}selected{% endif %}>US Dollar ($)</option>
+                <option value="€" {% if settings.currency_symbol == '€' %}selected{% endif %}>Euro (€)</option>
+                <option value="£" {% if settings.currency_symbol == '£' %}selected{% endif %}>British Pound (£)</option>
+                <option value="¥" {% if settings.currency_symbol == '¥' %}selected{% endif %}>Japanese Yen (¥)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="low_stock_threshold">Low Stock Threshold</label>
+            <input type="number" id="low_stock_threshold" name="low_stock_threshold" 
+                   value="{{ settings.low_stock_threshold }}" step="0.01" min="0">
+            <small class="form-text">Minimum stock level before alert is triggered</small>
+        </div>
+
+        <div class="form-group full-width">
+            <label class="checkbox-label">
+                <input type="checkbox" name="auto_sync_tally" value="true" 
+                       {% if settings.auto_sync_tally %}checked{% endif %}>
+                <span class="checkmark"></span>
+                Enable automatic Tally synchronization
+            </label>
+            <small class="form-text">Automatically sync data with Tally when changes are made</small>
+        </div>
+
+        <div class="form-group full-width">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="content-section">
+    <div class="section-header">
+        <h2>Tally Integration Settings</h2>
+    </div>
+    
+    <div class="form-grid">
+        <div class="form-group">
+            <label for="tally_url">Tally Server URL</label>
+            <input type="url" id="tally_url" name="tally_url" value="http://localhost:9000" disabled>
+            <small class="form-text">Tally server endpoint for integration</small>
+        </div>
+
+        <div class="form-group">
+            <label for="tally_company">Tally Company Name</label>
+            <input type="text" id="tally_company" name="tally_company" value="Your Company Name" disabled>
+            <small class="form-text">Company name in Tally software</small>
+        </div>
+
+        <div class="form-group full-width">
+            <button type="button" class="btn btn-info" disabled>
+                <i class="fas fa-sync"></i> Test Connection
+            </button>
+            <small class="form-text" style="display: block; margin-top: 0.5rem;">
+                Tally integration requires Tally.ERP 9 with ODBC and XML capabilities enabled
+            </small>
+        </div>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="section-header">
+        <h2>Danger Zone</h2>
+    </div>
+    
+    <div class="danger-zone">
+        <div class="danger-item">
+            <div class="danger-content">
+                <h4>Reset All Data</h4>
+                <p>Permanently delete all inventory, sales, purchase, and customer data. This action cannot be undone.</p>
+            </div>
+            <button type="button" class="btn btn-danger" onclick="confirmReset()">
+                <i class="fas fa-trash"></i> Reset All Data
+            </button>
+        </div>
+
+        <div class="danger-item">
+            <div class="danger-content">
+                <h4>Clear All Logs</h4>
+                <p>Delete all system logs and activity history. This will not affect your business data.</p>
+            </div>
+            <button type="button" class="btn btn-warning" onclick="confirmClearLogs()">
+                <i class="fas fa-broom"></i> Clear Logs
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmReset() {
+    if (confirm('⚠️ WARNING: This will delete ALL your data including items, customers, suppliers, and transactions. This action cannot be undone! Are you absolutely sure?')) {
+        if (confirm('‼️ FINAL WARNING: This will permanently erase all your business data. Type "RESET" to confirm.')) {
+            const confirmation = prompt('Please type "RESET" to confirm:');
+            if (confirmation === 'RESET') {
+                alert('Data reset initiated. This feature is not yet implemented.');
+                // In a real application, you would call a reset endpoint here
+            }
+        }
+    }
+}
+
+function confirmClearLogs() {
+    if (confirm('Are you sure you want to clear all system logs?')) {
+        alert('Log clearance initiated. This feature is not yet implemented.');
+        // In a real application, you would call a clear logs endpoint here
+    }
+}
+</script>
+
+<style>
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+}
+
+.checkbox-label input {
+    margin-right: 0.5rem;
+}
+
+.danger-zone {
+    border: 2px solid #e74c3c;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.danger-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #f8d7da;
+}
+
+.danger-item:last-child {
+    border-bottom: none;
+}
+
+.danger-content h4 {
+    color: #e74c3c;
+    margin-bottom: 0.5rem;
+}
+
+.danger-content p {
+    color: #666;
+    margin: 0;
+}
+</style>
+{% endblock %}
