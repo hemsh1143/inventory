@@ -1,0 +1,32 @@
+inventory_tally_system/
+├── app.py
+├── database.py
+├── tally_integration.py
+├── requirements.txt
+├── installation.bat
+├── inventory.db
+├── backups/
+├── templates/
+│   ├── base.html
+│   ├── dashboard.html
+│   ├── login.html
+│   ├── items.html
+│   ├── purchase.html
+│   ├── sales.html
+│   ├── payable.html
+│   ├── receivable.html
+│   ├── suppliers.html
+│   ├── customers.html
+│   ├── workers.html
+│   ├── tasks.html
+│   ├── reports.html
+│   ├── tally_sync.html
+│   ├── change_password.html
+│   ├── admin_users.html
+│   ├── admin_logs.html
+│   ├── admin_backup.html
+│   ├── admin_maintenance.html
+│   ├── 404.html
+│   └── 500.html
+└── static/
+    └── style.css
