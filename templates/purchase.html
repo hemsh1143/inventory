@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Purchase Management</h1>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPurchaseModal">
+        <i class="fas fa-plus"></i> Create Purchase Order
+    </button>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>PO Number</th>
+                <th>Supplier</th>
+                <th>Date</th>
+                <th>Total Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for purchase in purchases %}
+            <tr>
+                <td>{{ purchase.po_number }}</td>
+                <td>{{ purchase.supplier.name if purchase.supplier else 'N/A' }}</td>
+                <td>{{ purchase.order_date.strftime('%Y-%m-%d') if purchase.order_date else 'N/A' }}</td>
+                <td>{{ format_currency(purchase.total_amount) }}</td>
+                <td>
+                    <span class="badge bg-{{ 'success' if purchase.status == 'received' else 'warning' }}">
+                        {{ purchase.status }}
+                    </span>
+                </td>
+                <td>
+                    {% if purchase.status == 'pending' %}
+                    <a href="{{ url_for('receive_purchase', po_id=purchase.id) }}" class="btn btn-sm btn-outline-success" onclick="return confirm('Mark this purchase as received?')">
+                        <i class="fas fa-check"></i> Receive
+                    </a>
+                    {% endif %}
+                    {% if not purchase.tally_synced %}
+                    <span class="badge bg-warning">Not Synced</span>
+                    {% else %}
+                    <span class="badge bg-success">Synced</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Purchase Modal -->
+<div class="modal fade" id="addPurchaseModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Purchase Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('create_purchase') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Supplier</label>
+                        <select class="form-control" name="supplier_id" required>
+                            <option value="">Select Supplier</option>
+                            {% for supplier in suppliers %}
+                            <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Items</label>
+                        <div id="items-container">
+                            <div class="row mb-2">
+                                <div class="col-md-5">
+                                    <select class="form-control" name="item_id[]" required>
+                                        <option value="">Select Item</option>
+                                        {% for item in items %}
+                                        <option value="{{ item.id }}">{{ item.name }} ({{ item.sku }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" step="0.01" class="form-control" name="quantity[]" placeholder="Qty" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" step="0.01" class="form-control" name="unit_cost[]" placeholder="Unit Cost" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-danger btn-sm remove-item"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="add-item-btn">
+                            <i class="fas fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create Purchase Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+document.getElementById('add-item-btn').addEventListener('click', function() {
+    const container = document.getElementById('items-container');
+    const newRow = document.createElement('div');
+    newRow.className = 'row mb-2';
+    newRow.innerHTML = `
+        <div class="col-md-5">
+            <select class="form-control" name="item_id[]" required>
+                <option value="">Select Item</option>
+                {% for item in items %}
+                <option value="{{ item.id }}">{{ item.name }} ({{ item.sku }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="number" step="0.01" class="form-control" name="quantity[]" placeholder="Qty" required>
+        </div>
+        <div class="col-md-3">
+            <input type="number" step="0.01" class="form-control" name="unit_cost[]" placeholder="Unit Cost" required>
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-danger btn-sm remove-item"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+    container.appendChild(newRow);
+});
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-item')) {
+        e.target.closest('.row').remove();
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

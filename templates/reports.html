@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Reports & Analytics</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('export_excel', report_type='stock') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-file-excel"></i> Export Stock
+            </a>
+            <a href="{{ url_for('export_excel', report_type='sales') }}" class="btn btn-sm btn-outline-success">
+                <i class="fas fa-file-excel"></i> Export Sales
+            </a>
+            <a href="{{ url_for('export_excel', report_type='payable') }}" class="btn btn-sm btn-outline-danger">
+                <i class="fas fa-file-excel"></i> Export Payable
+            </a>
+            <a href="{{ url_for('export_excel', report_type='receivable') }}" class="btn btn-sm btn-outline-warning">
+                <i class="fas fa-file-excel"></i> Export Receivable
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ total_items }}</h5>
+                <p class="card-text">Total Items</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-warning">{{ low_stock_count }}</h5>
+                <p class="card-text">Low Stock Items</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-danger">{{ format_currency(total_payable) }}</h5>
+                <p class="card-text">Total Payable</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-success">{{ format_currency(total_receivable) }}</h5>
+                <p class="card-text">Total Receivable</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Stock Status</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Stock</th>
+                                <th>Min Level</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in stock_status %}
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.current_stock }}</td>
+                                <td>{{ item.min_stock_level }}</td>
+                                <td>
+                                    <span class="badge bg-{% if item.current_stock <= 0 %}danger{% elif item.current_stock <= item.min_stock_level %}warning{% else %}success{% endif %}">
+                                        {% if item.current_stock <= 0 %}Out of Stock{% elif item.current_stock <= item.min_stock_level %}Low Stock{% else %}Adequate{% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Recent Sales</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Invoice</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sale in sales_report %}
+                            <tr>
+                                <td>{{ sale.invoice_number }}</td>
+                                <td>{{ sale.customer.name if sale.customer else 'N/A' }}</td>
+                                <td>{{ format_currency(sale.total_amount) }}</td>
+                                <td>{{ sale.sale_date.strftime('%Y-%m-%d') if sale.sale_date else 'N/A' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Pending Payments</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Supplier</th>
+                                <th>Amount</th>
+                                <th>Due Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payable in payable_report %}
+                            {% if payable.status == 'pending' %}
+                            <tr>
+                                <td>{{ payable.supplier.name if payable.supplier else 'N/A' }}</td>
+                                <td>{{ format_currency(payable.amount) }}</td>
+                                <td>{{ payable.due_date.strftime('%Y-%m-%d') if payable.due_date else 'N/A' }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">Pending Receivables</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Due Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for receivable in receivable_report %}
+                            {% if receivable.status == 'pending' %}
+                            <tr>
+                                <td>{{ receivable.customer.name if receivable.customer else 'N/A' }}</td>
+                                <td>{{ format_currency(receivable.amount) }}</td>
+                                <td>{{ receivable.due_date.strftime('%Y-%m-%d') if receivable.due_date else 'N/A' }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

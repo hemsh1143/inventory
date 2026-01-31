@@ -1,0 +1,102 @@
+<div class="sidebar-sticky">
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'items' %}active{% endif %}" href="{{ url_for('items') }}">
+                <i class="fas fa-boxes"></i> Inventory Items
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'purchase' %}active{% endif %}" href="{{ url_for('purchase') }}">
+                <i class="fas fa-shopping-cart"></i> Purchase Orders
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'sales' %}active{% endif %}" href="{{ url_for('sales') }}">
+                <i class="fas fa-receipt"></i> Sales Orders
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'payable' %}active{% endif %}" href="{{ url_for('payable') }}">
+                <i class="fas fa-money-bill-wave"></i> Accounts Payable
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'receivable' %}active{% endif %}" href="{{ url_for('receivable') }}">
+                <i class="fas fa-hand-holding-usd"></i> Accounts Receivable
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'suppliers' %}active{% endif %}" href="{{ url_for('suppliers') }}">
+                <i class="fas fa-truck"></i> Suppliers
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'customers' %}active{% endif %}" href="{{ url_for('customers') }}">
+                <i class="fas fa-users"></i> Customers
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'workers' %}active{% endif %}" href="{{ url_for('workers') }}">
+                <i class="fas fa-user-tie"></i> Workers
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'tasks' %}active{% endif %}" href="{{ url_for('tasks') }}">
+                <i class="fas fa-tasks"></i> Tasks
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'reports' %}active{% endif %}" href="{{ url_for('reports') }}">
+                <i class="fas fa-chart-bar"></i> Reports
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'tally_sync' %}active{% endif %}" href="{{ url_for('tally_sync') }}">
+                <i class="fas fa-sync"></i> Tally Sync
+            </a>
+        </li>
+        
+        {% if current_user.role == 'admin' %}
+        <li class="nav-item mt-3">
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                <span>Administration</span>
+            </h6>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'admin_users' %}active{% endif %}" href="{{ url_for('admin_users') }}">
+                <i class="fas fa-user-cog"></i> User Management
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'admin_settings' %}active{% endif %}" href="{{ url_for('admin_settings') }}">
+                <i class="fas fa-cog"></i> System Settings
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'admin_maintenance' %}active{% endif %}" href="{{ url_for('admin_maintenance') }}">
+                <i class="fas fa-tools"></i> Maintenance
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+
+    <hr>
+
+    <ul class="nav flex-column mb-2">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('change_password') }}">
+                <i class="fas fa-key"></i> Change Password
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-danger" href="{{ url_for('logout') }}">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </li>
+    </ul>
+</div>

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Accounts Receivable</h1>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Invoice Number</th>
+                <th>Amount</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for receivable in receivables %}
+            <tr>
+                <td>{{ receivable.id }}</td>
+                <td>{{ receivable.customer.name if receivable.customer else 'N/A' }}</td>
+                <td>{{ receivable.sales_order.invoice_number if receivable.sales_order else 'N/A' }}</td>
+                <td>{{ format_currency(receivable.amount) }}</td>
+                <td>{{ receivable.due_date.strftime('%Y-%m-%d') if receivable.due_date else 'N/A' }}</td>
+                <td>
+                    <span class="badge bg-{{ 'success' if receivable.status == 'paid' else 'warning' }}">
+                        {{ receivable.status }}
+                    </span>
+                </td>
+                <td>
+                    {% if receivable.status == 'pending' %}
+                    <a href="{{ url_for('mark_received', receivable_id=receivable.id) }}" class="btn btn-sm btn-outline-success" onclick="return confirm('Mark this payment as received?')">
+                        <i class="fas fa-check"></i> Mark Received
+                    </a>
+                    {% else %}
+                    <span class="text-muted">Received on {{ receivable.paid_date.strftime('%Y-%m-%d') if receivable.paid_date else 'N/A' }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}System Maintenance - Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-tools"></i> System Maintenance</h1>
+    <p>Database management and system maintenance tools</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ db_stats.users }}</h3>
+            <p>Users</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-box"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ db_stats.items }}</h3>
+            <p>Items</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-truck"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ db_stats.suppliers }}</h3>
+            <p>Suppliers</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ db_stats.customers }}</h3>
+            <p>Customers</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ db_stats.purchase_orders }}</h3>
+            <p>Purchase Orders</p>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">
+            <i class="fas fa-receipt"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ db_stats.sales_orders }}</h3>
+            <p>Sales Orders</p>
+        </div>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="section-header">
+        <h2>Database Operations</h2>
+    </div>
+    
+    <div class="maintenance-actions">
+        <div class="action-card">
+            <div class="action-icon">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="action-content">
+                <h3>Backup Database</h3>
+                <p>Create a complete backup of your database including all items, customers, and transactions.</p>
+                <a href="{{ url_for('admin_backup_database') }}" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Download Backup
+                </a>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <div class="action-icon">
+                <i class="fas fa-broom"></i>
+            </div>
+            <div class="action-content">
+                <h3>Clear Old Data</h3>
+                <p>Remove resolved alerts and old sync logs to free up space and improve performance.</p>
+                <form method="POST" action="{{ url_for('admin_clear_old_data') }}" class="inline-form">
+                    <div class="form-group">
+                        <label for="days_old">Delete data older than (days):</label>
+                        <input type="number" id="days_old" name="days_old" value="365" min="30" max="1095">
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-broom"></i> Clear Old Data
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="action-card">
+            <div class="action-icon">
+                <i class="fas fa-sync"></i>
+            </div>
+            <div class="action-content">
+                <h3>Rebuild Indexes</h3>
+                <p>Optimize database performance by rebuilding indexes and cleaning up fragmented data.</p>
+                <button type="button" class="btn btn-info" onclick="rebuildIndexes()">
+                    <i class="fas fa-sync"></i> Rebuild Indexes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="section-header">
+        <h2>System Information</h2>
+    </div>
+    
+    <div class="system-info">
+        <div class="info-item">
+            <span class="info-label">Python Version:</span>
+            <span class="info-value">3.8+</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Flask Version:</span>
+            <span class="info-value">2.3.3</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Database:</span>
+            <span class="info-value">SQLite</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Last Backup:</span>
+            <span class="info-value">Never</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">System Status:</span>
+            <span class="info-value status-ok">Operational</span>
+        </div>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="section-header">
+        <h2>Advanced Tools</h2>
+    </div>
+    
+    <div class="advanced-tools">
+        <div class="tool-item">
+            <h4>Database Console</h4>
+            <p>Execute direct SQL queries on the database (Advanced users only)</p>
+            <button type="button" class="btn btn-outline" onclick="openConsole()" disabled>
+                <i class="fas fa-terminal"></i> Open Console
+            </button>
+        </div>
+
+        <div class="tool-item">
+            <h4>Import Data</h4>
+            <p>Bulk import items, customers, or suppliers from CSV files</p>
+            <button type="button" class="btn btn-outline" onclick="importData()" disabled>
+                <i class="fas fa-file-import"></i> Import Data
+            </button>
+        </div>
+
+        <div class="tool-item">
+            <h4>System Logs</h4>
+            <p>View detailed system logs and error reports</p>
+            <button type="button" class="btn btn-outline" onclick="viewLogs()" disabled>
+                <i class="fas fa-file-alt"></i> View Logs
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function rebuildIndexes() {
+    if (confirm('This will optimize database performance. The system may be slow during this operation. Continue?')) {
+        alert('Index rebuild initiated. This feature is not yet implemented.');
+        // In a real application, you would call a rebuild indexes endpoint
+    }
+}
+
+function openConsole() {
+    alert('Database console requires additional security configuration.');
+}
+
+function importData() {
+    alert('Data import feature coming soon.');
+}
+
+function viewLogs() {
+    alert('Log viewer feature coming soon.');
+}
+</script>
+
+<style>
+.maintenance-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.action-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+}
+
+.action-icon {
+    font-size: 2rem;
+    color: #3498db;
+}
+
+.action-content {
+    flex: 1;
+}
+
+.action-content h3 {
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.action-content p {
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.inline-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.inline-form .form-group {
+    margin-bottom: 0;
+}
+
+.system-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.info-label {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.info-value {
+    color: #666;
+}
+
+.status-ok {
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.advanced-tools {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.tool-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.tool-item h4 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.tool-item p {
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline:hover {
+    background: #6c757d;
+    color: white;
+}
+</style>
+{% endblock %}

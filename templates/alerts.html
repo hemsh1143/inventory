@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Alerts - Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-exclamation-triangle"></i> Stock Alerts</h1>
+    <p>Monitor and manage your inventory alerts</p>
+</div>
+
+<div class="content-section">
+    <div class="section-header">
+        <h2>Active Alerts</h2>
+        <div class="header-actions">
+            <a href="{{ url_for('resolve_all_alerts') }}" class="btn btn-success" onclick="return confirm('Mark all alerts as resolved?')">
+                <i class="fas fa-check-double"></i> Resolve All
+            </a>
+        </div>
+    </div>
+
+    {% if alerts %}
+    <div class="alerts-container">
+        {% for alert in alerts %}
+        <div class="alert-card {{ 'critical' if alert.alert_type == 'out_of_stock' else 'warning' }}">
+            <div class="alert-icon">
+                {% if alert.alert_type == 'out_of_stock' %}
+                <i class="fas fa-times-circle"></i>
+                {% else %}
+                <i class="fas fa-exclamation-triangle"></i>
+                {% endif %}
+            </div>
+            <div class="alert-content">
+                <div class="alert-header">
+                    <h3>{{ alert.item.name }}</h3>
+                    <span class="alert-type {{ alert.alert_type }}">
+                        {{ 'Out of Stock' if alert.alert_type == 'out_of_stock' else 'Low Stock' }}
+                    </span>
+                </div>
+                <p class="alert-message">{{ alert.message }}</p>
+                <div class="alert-meta">
+                    <span class="sku">SKU: {{ alert.item.sku }}</span>
+                    <span class="category">Category: {{ alert.item.category or 'N/A' }}</span>
+                    <span class="timestamp">{{ alert.created_date.strftime('%Y-%m-%d %H:%M') }}</span>
+                </div>
+                <div class="stock-info">
+                    <div class="stock-level">
+                        <span class="label">Current Stock:</span>
+                        <span class="value {{ 'zero' if alert.item.current_stock <= 0 else 'low' if alert.item.current_stock <= alert.item.min_stock_level else 'normal' }}">
+                            {{ alert.item.current_stock }}
+                        </span>
+                    </div>
+                    <div class="min-level">
+                        <span class="label">Min Level:</span>
+                        <span class="value">{{ alert.item.min_stock_level }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="alert-actions">
+                <a href="{{ url_for('resolve_alert', alert_id=alert.id) }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-check"></i> Resolve
+                </a>
+                <a href="{{ url_for('items') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-edit"></i> Manage Item
+                </a>
+                <a href="{{ url_for('purchase_orders') }}" class="btn btn-info btn-sm">
+                    <i class="fas fa-shopping-cart"></i> Reorder
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="alerts-summary">
+        <div class="summary-item critical">
+            <i class="fas fa-times-circle"></i>
+            <span class="count">{{ alerts|selectattr('alert_type', 'equalto', 'out_of_stock')|list|length }}</span>
+            <span class="label">Out of Stock</span>
+        </div>
+        <div class="summary-item warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span class="count">{{ alerts|selectattr('alert_type', 'equalto', 'low_stock')|list|length }}</span>
+            <span class="label">Low Stock</span>
+        </div>
+        <div class="summary-item total">
+            <i class="fas fa-bell"></i>
+            <span class="count">{{ alerts|length }}</span>
+            <span class="label">Total Alerts</span>
+        </div>
+    </div>
+    {% else %}
+    <div class="no-alerts">
+        <i class="fas fa-check-circle"></i>
+        <h3>No Active Alerts</h3>
+        <p>All inventory items are properly stocked. Great job!</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="content-section">
+    <div class="section-header">
+        <h2>Alert Settings</h2>
+    </div>
+    
+    <div class="alert-settings">
+        <div class="setting-item">
+            <h4>Low Stock Threshold</h4>
+            <p>Receive alerts when item stock falls below this level</p>
+            <div class="setting-value">5 units</div>
+        </div>
+
+        <div class="setting-item">
+            <h4>Email Notifications</h4>
+            <p>Receive alert notifications via email</p>
+            <div class="setting-status disabled">Disabled</div>
+        </div>
+
+        <div class="setting-item">
+            <h4>Auto Reorder</h4>
+            <p>Automatically create purchase orders for low stock items</p>
+            <div class="setting-status disabled">Disabled</div>
+        </div>
+    </div>
+</div>
+
+<style>
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.alerts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.alert-card {
+    display: flex;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border-left: 6px solid #f39c12;
+}
+
+.alert-card.critical {
+    border-left-color: #e74c3c;
+}
+
+.alert-card.warning {
+    border-left-color: #f39c12;
+}
+
+.alert-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    background: #f8f9fa;
+    font-size: 2rem;
+}
+
+.alert-card.critical .alert-icon {
+    color: #e74c3c;
+    background: #fadbd8;
+}
+
+.alert-card.warning .alert-icon {
+    color: #f39c12;
+    background: #fef9e7;
+}
+
+.alert-content {
+    flex: 1;
+    padding: 1.5rem;
+}
+
+.alert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.alert-header h3 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.alert-type {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.alert-type.out_of_stock {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.alert-type.low_stock {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.alert-message {
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.alert-meta {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.9rem;
+    color: #999;
+    margin-bottom: 1rem;
+}
+
+.stock-info {
+    display: flex;
+    gap: 2rem;
+}
+
+.stock-level, .min-level {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.label {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.value {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.value.zero {
+    color: #e74c3c;
+}
+
+.value.low {
+    color: #f39c12;
+}
+
+.value.normal {
+    color: #27ae60;
+}
+
+.alert-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    justify-content: center;
+}
+
+.alerts-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.summary-item.critical {
+    border-top: 4px solid #e74c3c;
+}
+
+.summary-item.warning {
+    border-top: 4px solid #f39c12;
+}
+
+.summary-item.total {
+    border-top: 4px solid #3498db;
+}
+
+.summary-item i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.summary-item.critical i {
+    color: #e74c3c;
+}
+
+.summary-item.warning i {
+    color: #f39c12;
+}
+
+.summary-item.total i {
+    color: #3498db;
+}
+
+.count {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.summary-item.critical .count {
+    color: #e74c3c;
+}
+
+.summary-item.warning .count {
+    color: #f39c12;
+}
+
+.summary-item.total .count {
+    color: #3498db;
+}
+
+.label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.no-alerts {
+    text-align: center;
+    padding: 3rem;
+    color: #27ae60;
+}
+
+.no-alerts i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.no-alerts h3 {
+    margin-bottom: 0.5rem;
+    color: #27ae60;
+}
+
+.no-alerts p {
+    color: #666;
+}
+
+.alert-settings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.setting-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.setting-item h4 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.setting-item p {
+    color: #666;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.setting-value, .setting-status {
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    background: white;
+    border: 1px solid #dee2e6;
+    text-align: center;
+}
+
+.setting-status.disabled {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.setting-status.enabled {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+</style>
+{% endblock %}
